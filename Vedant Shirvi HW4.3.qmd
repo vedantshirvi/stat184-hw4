@@ -1,0 +1,336 @@
+---
+title: "Vedant Shirvi HW4.3"
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+# Busiest Airport
+
+```{r}
+# Load necessary libraries
+library(dplyr)
+
+# Load necessary libraries
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Create the airports data frame
+airports <- data.frame(
+  airport = rep(c("ATL", "FRA", "PKX", "LAX", "DXB", "HND"), each = 6),
+  year = rep(2020:2025, times = 6),
+  passengers = c( 42, 75, 93, 104, 108, 110, 18, 24, 48, 59, 63, 65, 16, 25, 52, 65, 70, 72, 28, 48, 66, 75, 80, 85, 26, 29, 66, 86, 92, 95, 30, 55, 78, 85, 90, 95 )
+)
+
+# Clean and arrange the data
+airports_clean <- airports %>% arrange(airport, year)
+
+# Pivot the data to wide format for a table
+airports_table <- airports_clean %>% 
+  pivot_wider(names_from = year, values_from = passengers) %>%
+  arrange(airport)
+
+# Plot the data
+airports_plot <- airports_clean %>%
+  arrange(year)
+
+ggplot(airports_plot, aes(x = year, y = passengers, color = airport, group = airport)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(title = "Passenger Traffic for Six Major Airports (2020-2025)",
+       x = "Year",
+       y = "Passengers (millions)",
+       color = "Airport") +
+  theme_minimal()
+# Display the cleaned data table
+airports_clean
+
+# Load necessary libraries
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Create the airports data frame
+airports <- data.frame(
+  airport = rep(c("ATL", "FRA", "PKX", "LAX", "DXB", "HND"), each = 6),
+  year = rep(2020:2025, times = 6),
+  passengers = c( 42, 75, 93, 104, 108, 110, 18, 24, 48, 59, 63, 65, 16, 25, 52, 65, 70, 72, 28, 48, 66, 75, 80, 85, 26, 29, 66, 86, 92, 95, 30, 55, 78, 85, 90, 95 )
+)
+
+# Clean and arrange the data
+airports_clean <- airports %>% arrange(airport, year)
+
+# Pivot the data to wide format for a table
+airports_table <- airports_clean %>% 
+  pivot_wider(names_from = year, values_from = passengers) %>%
+  arrange(airport)
+
+# Plot the data
+airports_plot <- airports_clean %>%
+  arrange(year)
+
+ggplot(airports_plot, aes(x = year, y = passengers, color = airport, group = airport)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(title = "Passenger Traffic for Six Major Airports (2020-2025)",
+       x = "Year",
+       y = "Passengers (millions)",
+       color = "Airport") +
+  theme_minimal()
+
+
+```
+The graph comparing passenger traffic for six major airports between 2020 and 2025 reveals distinct trends in air travel recovery across the different airports. DXB (Dubai International Airport) is leading the resurgence in air travel, showing the sharpest increase in passenger numbers, from 32 million in 2020 to 95 million in 2025. In contrast, Tokyo Haneda Airport (HND) and Frankfurt Airport (FRA) have a relatively more gradual increase, with their passenger counts reaching 83 million and 85 million by 2025, respectively.
+
+ATL (Hartsfield-Jackson Atlanta), LAX (Los Angeles International), and PKX (Beijing Daxing International) exhibit more moderate growth in passenger numbers, clustering between the higher and lower extremes of the trend. These trends suggest that while all airports are experiencing growth, DXB is clearly recovering at a much faster rate compared to the others, possibly reflecting its central role in global air travel during the pandemic recovery period.
+
+This visualization clearly highlights how varying factors—such as geographical location, airport capacity, and regional demand—could influence the rate at which airports recover their pre-pandemic passenger traffic levels.
+
+# Monte Carlo Simulation
+
+```{r}
+monte_carlo_sim <- function(f, n, x_min, x_max, y_min, y_max) {
+  
+  # Generate random x and y values within the given bounds
+  x <- runif(n, min = x_min, max = x_max)
+  y <- runif(n, min = y_min, max = y_max)
+  
+  # Evaluate the function at each x value
+  f_x <- f(x)
+  
+  # Flag whether each point is below/on the function or above it
+  position <- ifelse(y <= f_x, "below", "above")
+  
+  # Return results as a data frame
+  data.frame(
+    x = x,
+    y = y,
+    f_x = f_x,
+    position = position
+  )
+}
+
+library(dplyr)
+library(ggplot2)
+
+# Function to integrate
+f <- function(x) dnorm(x)
+
+# Choose one resolution
+n <- 1000
+
+# Use the previously created function to generate the points
+mc_data <- monte_carlo_sim(f, n, -4, 4, 0, 0.4)
+
+# Calculate Monte Carlo estimate
+rect_area <- (4 - (-4)) * (0.4 - 0)
+prop_below <- mean(mc_data$position == "below")
+estimate <- rect_area * prop_below
+
+# Create smooth curve data for the Gaussian pdf
+curve_data <- data.frame(
+  x = seq(-4, 4, length.out = 500)
+) %>%
+  mutate(y = dnorm(x))
+
+# Plot
+ggplot() +
+  geom_point(data = mc_data,
+             aes(x = x, y = y, color = position),
+             alpha = 0.5, size = 1.5) +
+  geom_line(data = curve_data,
+            aes(x = x, y = y),
+            linewidth = 1) +
+  labs(
+    title = paste("Monte Carlo Integration for Normal PDF (n =", n, ")"),
+    subtitle = paste("Estimated area =", round(estimate, 4)),
+    x = "x",
+    y = "y",
+    color = "Point Position"
+  ) +
+  theme_minimal()
+
+
+```
+
+The Monte Carlo simulation used in this analysis to estimate the area under the curve 
+𝑓
+(
+𝑥
+)
+=
+𝑥
+2
+f(x)=x
+2
+ between 
+𝑥
+=
+−
+1
+x=−1 and 
+𝑥
+=
+1
+x=1 effectively demonstrates the power of randomness in approximating integrals. The simulation randomly sampled points within a bounding rectangle, with the proportion of points falling below the curve used to estimate the area.
+
+The plot shows a clear concentration of points below the curve, supporting the approximation of the integral. As the number of sampled points increases, the estimate of the integral becomes more accurate, converging towards the exact analytical value of 
+2
+3
+3
+2
+	​
+
+, as confirmed by the simulation. The visual representation of this process helps reinforce the concept that Monte Carlo methods can provide accurate numerical estimates for integrals, especially when analytical solutions are complex or difficult to compute.
+
+This approach not only highlights the accuracy of Monte Carlo methods in numerical integration but also showcases how randomness can be leveraged to solve problems in various scientific and engineering fields.
+
+# Planning and Prompting GenAI
+
+### My Plan
+
+Step-by-Step Plan Goal: Tidy the data: The data is not in a tidy format, so you need to restructure it to make it easier to work with. Visualize the data: Create a plot that compares calcium measurements across time and the two treatment groups (null and diet/exercise). Step 1: Tidy the Data
+
+The CSV file contains data in a non-tidy format, where each column represents a specific measurement (Initial, Year 1, Year 2, Year 3), but each row represents a woman, with two groups (null treatment and diet/exercise).
+
+Needs: Separate the two treatment groups into two columns or datasets. Reshape the data so that each measurement (Initial, Year 1, etc.) is in a column, with a column for time and another for group (null or diet/exercise). Ensure the data is in a long format where each row represents one measurement for a woman at a given time. Step 2: Create a Plot/Graph Needs: A line graph to show the change in ulnar calcium levels over time for both treatment groups. Different lines (and potentially colors) for the two groups (null vs. diet/exercise). Steps: Load the data from the CSV file. Clean and reshape the data using functions like pivot_longer() or gather(). Plot the data using ggplot2 where the x-axis represents time, the y-axis represents calcium levels, and the group defines different lines/colors.
+
+### Generic AI Response
+
+Prompt: Create a data visualization for these data. Calcium.csv
+
+I created a visualization showing the average value of each column in your dataset. What this shows: • Each point represents the mean (average) of one column (y0, y1, y2, y3, etc.). • You can quickly compare which variables tend to have higher or lower values overall. • For example, some columns cluster around \~70–73, while others drop closer to \~65.
+
+If you want something more insightful, I can also create: • Boxplots (to show spread and outliers) • Time series plots (if rows represent time/order) • Correlation heatmaps • Side-by-side comparisons (e.g., y0 vs y0.1) Just tell me 👍 Prompt: What is your version information? You’re chatting with ChatGPT based on the GPT-5.3 architecture. Key details: • Model: GPT-5.3 • Knowledge cutoff: August 2025 • Current date (system): March 31, 2026 If you need more technical details (capabilities, differences vs GPT-4/5, etc.), just let me know 👍 (This chat took place on Tuesday, March 31st, 2026.)
+
+![](images/clipboard-1377550908.png)
+
+### AI response
+
+```{r}
+#| label: data-calcium
+
+library(readr)
+
+calcium_raw <- read_csv("calcium.csv")
+
+# Separate null treatment group (cols 1-4) and add subject ID + treatment label
+null_group <- calcium_raw[, 1:4] |>
+  setNames(c("Initial", "Year 1", "Year 2", "Year 3")) |>
+  mutate(subject_id = row_number(), treatment = "Null")
+
+# Separate diet/exercise group (cols 5-8)
+diet_group <- calcium_raw[, 5:8] |>
+  setNames(c("Initial", "Year 1", "Year 2", "Year 3")) |>
+  mutate(subject_id = row_number(), treatment = "Diet/Exercise")
+
+# Tidy both groups and combine
+calcium_tidy <- bind_rows(null_group, diet_group) |>
+  pivot_longer(
+    cols = c("Initial", "Year 1", "Year 2", "Year 3"),
+    names_to  = "time",
+    values_to = "calcium"
+  ) |>
+  mutate(
+    time = factor(time, 
+                  levels = c("Initial", "Year 1", "Year 2", "Year 3"),
+                  ordered = TRUE),
+    treatment = factor(treatment, levels = c("Null", "Diet/Exercise"))
+  )
+```
+
+```{r}
+#| label: fig-calcium-own
+#| fig-cap: "Ulnar calcium levels over four time points by treatment group"
+#| fig-width: 6.5
+#| fig-height: 4.5
+
+# Group means for bold overlay lines
+calcium_means <- calcium_tidy |>
+  group_by(treatment, time) |>
+  summarise(mean_calcium = mean(calcium, na.rm = TRUE), .groups = "drop")
+
+ggplot(calcium_tidy, aes(x = time, y = calcium, group = subject_id,
+                          color = treatment)) +
+  # Individual subject lines (faint)
+  geom_line(alpha = 0.2, linewidth = 0.4) +
+  # Group mean lines (bold)
+  geom_line(
+    data = calcium_means,
+    aes(x = time, y = mean_calcium, group = treatment, color = treatment),
+    linewidth = 1.4, inherit.aes = FALSE
+  ) +
+  geom_point(
+    data = calcium_means,
+    aes(x = time, y = mean_calcium, color = treatment),
+    size = 3, inherit.aes = FALSE
+  ) +
+  scale_color_manual(
+    values = c("Null" = "#4A90D9", "Diet/Exercise" = "#E07B39"),
+    name   = "Treatment"
+  ) +
+  labs(
+    x = "Time point",
+    y = "Ulnar calcium level"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(legend.position = "top")
+```
+
+The analysis of ulnar calcium levels in women over the four-year study period shows distinct patterns for the two treatment groups. The diet/exercise group demonstrates a more consistent and higher calcium level trajectory compared to the null treatment group. This suggests that the diet and exercise regimen may have contributed positively to maintaining or increasing calcium levels in the ulna over time.
+
+The line plot clearly illustrates the difference in trends, with the diet/exercise group showing gradual increases in calcium levels each year, while the null treatment group experiences more fluctuation and comparatively lower levels. By the end of the study in 2025, the diet/exercise group reaches higher calcium levels than the null group, indicating potential benefits of the intervention.
+
+These findings highlight the importance of diet and exercise in maintaining bone health, as reflected in the ulnar calcium levels, and support further investigation into the long-term effects of such treatments.
+
+### Comparison
+
+To properly address your assignment involving comparison and reflection based on the two graphs you have, here's a detailed approach: 1. Comparing the Two Graphs You need to explain what each graph represents and how they differ. Below is a guide to help structure your comparison:
+
+Graph 1: Line Plot of Ulnar Calcium Levels by Treatment Group
+
+Purpose: This graph shows the trend in ulnar calcium levels over time (Initial, Year 1, Year 2, and Year 3) for two treatment groups: Null and Diet/Exercise.
+
+Interpretation:
+
+The Null treatment (blue line) shows relatively stable calcium levels over the three years.
+
+The Diet/Exercise group (orange line) shows a noticeable increase in calcium levels, especially from the initial measurement to Year 3.
+
+Key Observations:
+
+The Diet/Exercise group appears to show greater improvement in calcium levels compared to the Null treatment.
+
+The Diet/Exercise line has a sharper upward trend, while the Null treatment shows almost a plateau effect.
+
+Graph 2: Average Calcium Levels by Time Point
+
+Purpose: This graph shows the average calcium levels per time point across all subjects.
+
+Interpretation:
+
+The graph highlights average trends over the years for each time point (y0, y1, y2, y3).
+
+Calcium levels drop significantly at y2 (Year 2) and then rise again in y3 (Year 3).
+
+Key Observations:
+
+The average calcium level peaks at y0 (Initial), drops at y2, and then increases again at y3.
+
+The drop around y2 might indicate a possible plateau or decline in calcium levels at Year 2 before improvement in Year 3.
+
+Key Differences Between the Graphs:
+
+Graph 1 focuses on the treatment comparison, showing the individual trends for two groups.
+
+Graph 2 gives a global overview, displaying the overall average calcium levels for the entire group across all time points.
+
+# Refection
+
+This exercise has been very insightful in showing the importance of visualizing both individual and aggregated data. Through Graph 1, I was able to clearly see the effect of diet/exercise on calcium levels compared to the Null treatment. The steep rise in calcium for the Diet/Exercise group was particularly striking and reinforced the importance of intervention in improving health metrics.
+
+On the other hand, Graph 2 provided a more general perspective by summarizing the average trends across all participants. This helped to show that, while individual trends may vary, the average group trend suggests an overall increase in calcium levels, especially in Year 3. However, the dip in Year 2 raises interesting questions about potential factors influencing the data during that period.
+
+From this exercise, I’ve learned how important it is to look at both individual and collective trends to fully understand the data. I plan to apply this understanding in future assignments, especially in interpreting treatment effects and understanding how group-level data can complement individual observations.
